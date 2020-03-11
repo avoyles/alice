@@ -1,0 +1,61 @@
+ Calculation is completed;the following output files have been created:
+
+  "INSAVE " input file created from screen input
+
+  "OUTPT"   many things-read to check-may reduce in future
+
+  "PLOT  "  contains excitation function data for plots
+
+  "SDCSCM"  single differential cross sections in CM frame (mb/MeV)
+
+  "ENGANG"  energy columns versus angle DDCS in CM frame(mb/MeV/sr)
+
+  "ANGENG"  angle columns versus energy in CM frame(mb/ MeV/sr)
+
+  "SDCSTOTLB" total single differential spectra,evap.
+              plus fission n,p,alpha,LAB frame
+
+  "LABOUT"  single differential cross sections in LAB frame (mb/MeV)
+
+
+  "LABANGD" DDCS in LAB frame angle columns vs. energy
+            (mb/MeV/sr)
+
+  "LABENGD" DDCS in LAB frame,energy columns vs. angle
+            (mb/MeV/sr)
+
+  "GAMMASPEC" gamma ray spectra summed over nuclides
+
+  "SDCSFLB"  single diff. fission fragment emitted n,p,alpha spectra
+             in LAB frame (mb/Mev*sr)
+
+  "SDCSFCM"  single differential particle spectra in
+             fission fragment frame (not true cm)
+              plus fission n,p,alpha,LAB frame
+
+  "DDCSFLB"  double diff. spectra of n,p,alpha emitted
+             from fission fragments in LAB frame,A vs E
+
+  "DDCSFCM"  double diff. fission part. spectra
+             in ff frame,energy vs. angle
+
+  "DDCSTOTLB" total double differential spectra for
+              fission+evaporation n,p,alpha,LAB frame
+
+  "FOUT"    fission product yields-A,Excitation,Z
+
+  "FIZISOMR" fission product yields
+
+  "FIZISRAT" fission isomer ratios 
+
+  "FIZYBYA"  fission mass yields  
+
+  "FRAGSS"  fission fragment distributions:mass vs Z,
+            and Z yields for fixed A
+
+  "FIZYLDS" fission fragment yields with normalization
+
+             All spectra in CM system are given with
+             respect to channel angle for each emission
+             (not referred back to beam direction)
+
