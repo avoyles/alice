@@ -1,6 +1,6 @@
 c Alice20.f    5/20/2019 
 c Corrections to alice up to May 20, 2019 this version;corrects problems
-c non-Fermi gas level densities. 
+c in non-Fermi gas level densities in a17/alice17. 
 c at present fission is working for Fermi gas and KR level densities      
 c this is a version in development;please contact hmblann@gmail.com with problems
 c a collaborative effort of M.Blann,J.Bisplinghoff(Bonn Uni.),W.Scobel(Uni.Hamburg),
@@ -688,10 +688,14 @@ c  1/23 try mod eprot,ealpha
 c      eprot=eprot+ed
 c      ealpha=ealpha+ed
 c--1/23
-      edeut=float(ideut)*ed+ed
-      etrit=float(itrit)*ed+ed
-      e3he=float(i3he)*ed+ed
-      e7be=float(i7be)*ed+ed
+c 3/12/20 remove ed round to eduet,trit,3he,7be
+      edeut=float(ideut)*ed
+c     edeut=float(ideut)*ed+ed
+      etrit=float(itrit)*ed
+      e3he=float(i3he)*ed
+c     e3he=float(i3he)*ed+ed
+      e7be=float(i7be)*ed
+c     e7be=float(i7be)*ed+ed
       eoff(1)=0.
       eoff(2)=eprot
       eoff(3)=ealpha
@@ -706,7 +710,8 @@ c eoff array to adjust emission momenta to above barrier values in excl1,evap
             beffa = be(iz,ia,3) + ealpha+ed/2.
            
             eminn(iz,ia) = min(be(iz,ia,1),beffp,beffa)
-            eminn(iz,ia)=eminn(iz,ia)+ed+ed/2.
+            eminn(iz,ia)=eminn(iz,ia)+ed
+c 3/1/2020 remove ed/2.          eminn(iz,ia)=eminn(iz,ia)+ed+ed/2.
 c           eminn(iz,ia)=eminn(iz,ia)+ed
  43   continue
       ratem=amass**0.3333
@@ -8760,6 +8765,7 @@ c     if(i.eq.2) write(17,504)xe,(ercoil(ll),ll=j1,j1+9)
       end
 c
       subroutine reclsv
+      common/spins2/spinu,spinf,prz1
       common/outlim/limout,lim2
       common/labcon/prx,pry,prz,pcm,rmas,clab(999,8),dslb(36,999,8)
       common/scat/jz,ja, probxx(2,2),q1(8,1100),fcs,eloss,fcspec
@@ -8863,6 +8869,7 @@ c      rphir(iphii)=rphir(iphii)+fcs
       return
       end
       subroutine bngwrt
+      common/spins2/spinu,spinf,prz1
       common/endvarray/endvcm1(36,999,8),endvcm2(6,36,999,8),
      1endvcm3(10,36,999,8),cmen1(8,999),cmen2(6,8,999),cmen3(10,8,999)
       common/endvparm/iend,lll(6,6,6),ll(6,6)
@@ -10061,6 +10068,7 @@ C
       subroutine recoil(irecoi)
 c  parameter irecoi is added, kkg  04/13/11
 c this sr will give lab system energies and angles for emitted particles
+      common/spins2/spinu,spinf,prz1
       common/debug/alphan
       common/clkin/elab
       common/endvparm/iend,lll(6,6,6),ll(6,6)
@@ -10105,6 +10113,8 @@ c angles are recomputed at each stage as well,in that their prz,pry,prx componen
 c are recalculated.nout is the number of particle(i.e. first emission,second,third etc.)
 c rmas is the mass number of the residual nucleus left after this particle has been
 c emitted.
+c     write(*,*)'prx,y,z',prx,pry,prz
+c     write(*,*)'ap=',ap,'reccon',reccon
       if(ap.gt.1.)then
       if(reccon.gt.0.)go to 1000
       endif
@@ -10119,13 +10129,17 @@ c     ip=1.+phi*18./3.1416
 c thet,phi are the emission angles wrt z beam axis in recoil frame
 c     phin(ip)=phin(ip)+1.
 c9999  format(' phi=',f10.3,'iph=',i5,'csp=',f10.3,'snp=',f10.3)
-       if(kinem.eq.1)go to 500
+c      if(kinem.eq.1)go to 500
        pcmx=pcm*snt(ith)*csp(iph)+pcmx
        pcmy=pcm*snt(ith)*snp(iph)+pcmy
        pcmz=pcm*cst(ith)+pcmz
        return
   500 continue
 c add 11/18/2008 def pcm as ejectile c.m. momentum
+c     write(*,*)'-----------------------------------'
+c     write(*,*)'elab ',elab,'nu,am(nu)',nu,am(nu)
+c     write(*,*)'ith,snt(ith),csp(ith)',ith,snt(ith),csp(ith)
+
 c     pcm=sqrt(2.*am(nu)*elab)
       pcmx=pcm*snt(ith)*csp(iph)
       pcmy=pcm*snt(ith)*snp(iph)
@@ -10134,11 +10148,14 @@ c     pcm=sqrt(2.*am(nu)*elab)
       vcmx=pcmx/am(nu)
       vcmy=pcmy/am(nu)
       vcmz=pcmz/am(nu)
+c     write(*,*)'pcm,pcmx,pcmy,pcmz',pcm,pcmx,pcmy,pcmz
+c     write(*,*)'nu,am(nu)',nu,am(nu)
 c velocities = p/a(ejectile)
 c calculate recoil boosted velocities of ejectiles in lab frame
       vlabx=vcmx+prx/(rmas+am(nu))
       vlaby=vcmy+pry/(rmas+am(nu))
       vlabz=vcmz+prz/(rmas+am(nu))
+      write(*,*)'vcmz,prz',vcmz,prz
           plax=vlabx*am(nu)
           play=vlaby*am(nu)
           plaz=vlabz*am(nu)
@@ -10150,12 +10167,14 @@ c calculate recoil boosted velocities of ejectiles in lab frame
       elabch=0.5*vsqlab*am(nu)
        elab=elabch
 c8/23c     elab=elabch*rmas/(rmas+am(nu))
+      write(*,*)'vlabx,vlaby',vlabx,vlaby
+      write(*,*)'vlabz',vlabz
       argy=sqrt(vlabx**2+vlaby**2)
       thlab=atan2(argy,vlabz)
 c  70 thlab=atan(sqrt(vlabx**2+vlaby**2)/vlabz)
 c     if(thlab.lt.0.)thlab=thlab+3.14159
       if(vlabx.eq.0.)vlabx=0.00001
-c     arg=(vlaby/vlabx)
+c     areg=(vlaby/vlabx)
       philab=atan2(vlaby,vlabx)
       if(philab.lt.0.0) philab = 6.28318531 + philab
 c       if(vlabx.lt.0..and.vlaby.lt.0.)philab=3.14159+philab
@@ -10516,6 +10535,7 @@ crc
        return
        end
         subroutine precomgam
+      common/spins2/spinu,spinf,prz1
       common/astp3/niso,no,iadlt,isotag,massno(12),mass1(12),ncsave
       common/nhy/ij,jl,ji,jj,bd,bx1,bx2,cmx,cv,bav,bost,b(3)
       common/sft5/exc(18,27),xmax
@@ -11409,6 +11429,7 @@ c       endif
 c  subroutine to give nucleon/hole identities (n,n,n-1..)
 c  when one nucleon scatters in fermi sea
 c  returns 'n1' as first exciton of 2p1h,'nn1' as second,and nhol as hole
+      common/spins2/spinu,spinf,prz1
       common/edep/pxx(2,1100)
       common/incr/ed,tened,efinal
       common/excid/npartt(2)
@@ -12690,6 +12711,7 @@ c--------------------------------------------------------
 c-------------------------------------------------------
        light=0
        spinprp=0.
+       spinf=0.
 c---------------------------------------------------
          call xjlcpl(jzl)
 c         xjlcpl returns random l-inc coupled with projectile spin as
@@ -12834,6 +12856,7 @@ c add perp 1/20/02
        spinprp=spinprp+delprp
        adelj(ii)=delj
        spinf=spinf+delj
+c      write(*,*)'12843 delj,spinf',delj,spinf,ncount
        nu=n1
          ievap=0
 c-------------------------------
@@ -13007,16 +13030,9 @@ c-------------------------------------------------------
 c-------------------------------------------------------
          ppstor=1.
         spinxt=spinu-spinf
-        write(*,*)'delj=',delj
-        write(*,*)'spinu=',spinu
-        write(*,*)'spinf=',spinf
-        write(*,*)'spinxt=',spinxt
-        write(*,*)'spinprp=',spinprp
         spinr=sqrt(spinxt**2+spinprp**2)
-        write(*,*)'spinr=',spinr
          ispinr=abs(spinr+0.5)
           spin=ispinr
-          write(*,*)'spin=',spin
       
       ijz=zee+1.-float(jz)
       ija=amass+2.-float(jz)-float(ja)
@@ -13030,10 +13046,8 @@ c---------------------------------
        spin=abs(spin+0.5)
        endif
        endif
-       write(*,*)'spin=',spin
 c-------------------------------
           jl=(2.*spin)+1.
-          write(*,*)'jl=',jl
         if(jl.lt.1)jl=abs(jl)
         if(jl.gt.180)jl=180
 c-----------------------------------
@@ -13135,7 +13149,7 @@ c this sr is called only for incident photons
       common/bound/neut2,iprot,idnuc(100),idm(100),einc(100),
      1thett(100),phit(100),ppp
       common/hyb2/pp(15,24,999)
-      common/evapmc/jcount,ipremc,eminn(15,24)
+      common/evapmc/jcount,iprc,eminn(15,24)
       common/ilcom/nu,ndum,am(8)
       common/rcl/amis
       common/labcon/prx,pry,prz,pcm,rmas,clab(999,8),dslb(36,999,8)
@@ -13937,10 +13951,11 @@ c-----------------------------------------------------
        sumt=0.
        caxsum=0.
 c//////////////////////////////////////////////////////////////       
+c begin loop 10000 on monte carlo event
        do 10000 icnt=1,ncount
+c begin new MC event on index icnt, so reset all relevnt parms       
 c 5/10/19 set eloss=0. for each event       
        eloss=0.
-c begin new MC event on index icnt, so reset all relevnt parms       
 c---------------------------------------------------------
         call xjlcpl(jzl)
         call ijlcpl
@@ -14372,7 +14387,10 @@ c       if(light.gt.0)go to 10005
        go to 10000
 10005  continue
 c  the store below does not consider lt barf requirement;should call
-c  evap for store rather than here       
+c  evap for store rather than here to also consider branch if efinal
+c  lt.eminn but gt fission barrier, then element should fiss rather than
+c  store as ER- but in this case it likely would have undergone fission
+c  during decay chain       
        if(efinal.lt.eminn(jz,ja))          then
 c--------------------------------------------------------
          pp(jz,ja,ixm)=pp(jz,ja,ixm)+fcs
@@ -16792,6 +16810,7 @@ c------------------------------------------------------------------
 c----------------------------------------------------------------
 c sub endvsort1 should sort 1,2,3 particle exclusive events for sdcs (only n,p,4He initially)
       subroutine endvsort1
+      common/spins2/spinu,spinf,prz1
       common/nuopt/kinem,iem,kb
       common/scat/jz,ja, probxx(2,2),q1(8,1100),fcs,eloss,fcspec
       common/histindx/ihist
@@ -17765,6 +17784,7 @@ c argument
 c
 c
        subroutine rotangl(pout,einc,eout,tph,pph,elab)
+      common/spins2/spinu,spinf,prz1
       common/hik/yph,xph,zph
       common/pmom/bio
       common/shft/mc,mp,inver,ike,ipch,kq,qval,ap,at,zp,zt,cld,barfac
@@ -17874,6 +17894,7 @@ c tph1,pph1 from calling routine,entered here as thet1,phi1,returned here the
 c final angles in original coordinate system as thnu1,phnu1
 c
        subroutine rotang2(pin,einc,eout,thol,phol,elab)
+      common/spins2/spinu,spinf,prz1
       common/labcon/prx,pry,prz,pcm,rmas,clab(999,8),dslb(36,999,8)
       common/pmom/bio
       common/shft/mc,mp,inver,ike,ipch,kq,qval,ap,at,zp,zt,cld,barfac
@@ -18025,9 +18046,12 @@ c sept 02 put this emission into history file
 c       ek1=enscat
        nu=nscat
        rmas=amass+2.-float(ka)-float(kz)
-       ecm=elabh*rmas/(rmas+1.)
+c      ecm=elabh*rmas/(rmas+1.)
+c use channel energy as calculated
        pcm=sqrt(2.*elabh)
-       qcm=sqrt(2.*(ecm-eoff(nscat)))
+c      qcm=sqrt(2.*(ecm-eoff(nscat)))
+c 3/13/20 redefine qcm as ecm emitted particle
+        qcm=pcm
        tspin=spincon*qcm
        delj=tspin*cos(thethol)
        delprp=delj*sin(thethol)*sin(phihol)/cos(thethol)
@@ -18118,6 +18142,7 @@ c 11/8/2010
        end
 c
       subroutine sortmc
+      common/spins2/spinu,spinf,prz1
       common/outlim/limout,lim2
       common/nuopt/kinem,iem,kb
       common/isomer1/xgs(690),xiso(690),x2iso(690),isonum,isoint,iso2num
