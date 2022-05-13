@@ -22980,7 +22980,7 @@ c
       common/sigsav/sigdr(100),sigqd(100)
       common/ismrdat/isoid(106,260),levnm(1000),bevj(1000,3)
 C
-      common/testout/sumcs(50)
+      common/testout/sumcs(100)
 c     switch=1.
        go to(5,15,25),k2
     5 continue
